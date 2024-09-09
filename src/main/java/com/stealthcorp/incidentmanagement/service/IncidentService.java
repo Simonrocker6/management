@@ -7,9 +7,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.stealthcorp.incidentmanagement.model.Status.ACTIVE;
 
@@ -17,15 +18,15 @@ import static com.stealthcorp.incidentmanagement.model.Status.ACTIVE;
 @Slf4j
 public class IncidentService {
 
-    private Map<Long, Incident> incidentMap = new HashMap<>();
-    private long currentId = 1;
+    private Map<Long, Incident> incidentMap = new ConcurrentHashMap<>();
+    private AtomicLong currentId = new AtomicLong(1);
 
     public List<Incident> listIncidents() {
         return new ArrayList<>(incidentMap.values().stream().filter(x -> x.getStatus().equals(ACTIVE)).toList());
     }
 
-    public Incident createIncident(Incident incident) {
-        incident.setId(currentId++);
+    public synchronized Incident createIncident(Incident incident) {
+        incident.setId(currentId.getAndIncrement());
         incident.setCreatedTime(LocalDateTime.now());
         incident.setLastModifiedTime(LocalDateTime.now());
         incident.setStatus(ACTIVE);
@@ -36,7 +37,7 @@ public class IncidentService {
         return incident;
     }
 
-    public Incident modifyIncident(Long id, Incident incident) {
+    public synchronized Incident modifyIncident(Long id, Incident incident) {
         if (!incidentMap.containsKey(id)) {
             log.error("Incident not found to modify.");
             return null;
@@ -55,7 +56,7 @@ public class IncidentService {
         return incidentMap.get(id);
     }
 
-    public void deleteIncident(Long id)  {
+    public synchronized void  deleteIncident(Long id)  {
         if (!incidentMap.containsKey(id)) {
             log.error("Incident not found to delete.");
             return;

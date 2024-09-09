@@ -25,7 +25,7 @@ public class IncidentController {
     }
 
     @PostMapping
-    public synchronized Incident createIncident(@RequestBody Incident incident) {
+    public Incident createIncident(@RequestBody Incident incident) {
         return incidentService.createIncident(incident);
     }
 
@@ -35,12 +35,12 @@ public class IncidentController {
     }
 
     @PutMapping("/{id}")
-    public synchronized Incident modifyIncident(@PathVariable Long id, @RequestBody Incident incident) {
+    public Incident modifyIncident(@PathVariable Long id, @RequestBody Incident incident) {
         return incidentService.modifyIncident(id, incident);
     }
 
     @DeleteMapping("/{id}")
-    public synchronized void deleteIncident(@PathVariable Long id) {
+    public void deleteIncident(@PathVariable Long id) {
         incidentService.deleteIncident(id);
     }
 }
